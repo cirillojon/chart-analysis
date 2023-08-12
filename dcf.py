@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Constants and assumptions
-discount_rate = 0.1
+discount_rate = 0.1  # This would be replaced by WACC later
 terminal_growth_rate = 0.03
 forecast_period = 5
 
@@ -23,16 +23,39 @@ else:
     raise ValueError("Couldn't fetch or compute the required financial data.")
 
 yearly_growth = financials["Operating Income"].pct_change().mean()
-
 free_cash_flows = [recent_free_cash_flow * (1 + yearly_growth)**i for i in range(forecast_period)]
 
 # Terminal cash flow
 terminal_cash_flow = free_cash_flows[-1] * (1 + terminal_growth_rate) / (discount_rate - terminal_growth_rate)
-
-# DCF
 present_values = [cf / (1 + discount_rate) ** (i + 1) for i, cf in enumerate(free_cash_flows)]
 terminal_value = terminal_cash_flow / (1 + discount_rate) ** forecast_period
 total_present_value = np.sum(present_values) + terminal_value
+
+# Metrics computations
+if "Normalized EBITDA" in financials.columns:
+    ebitda = financials["Normalized EBITDA"].dropna()[0]
+else:
+    ebitda = None  
+
+ebit = recent_free_cash_flow
+tax_rate = 0.3
+ebiat = ebit * (1 - tax_rate)
+
+years_available = len(financials["Operating Income"].dropna())
+if years_available > 1:
+    start_value = financials["Operating Income"].dropna().iloc[-1]
+    end_value = ebit
+    cagr = ((end_value/start_value) ** (1/years_available)) - 1
+else:
+    cagr = yearly_growth
+
+wacc = 0.1
+
+print(f"CAGR: {cagr}")
+print(f"EBITDA: {ebitda}")
+print(f"EBIT: {ebit}")
+print(f"EBIAT: {ebiat}")
+print(f"WACC: {wacc}")
 
 # Visualization
 plt.figure(figsize=(12, 6))
