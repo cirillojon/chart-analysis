@@ -2,8 +2,8 @@ import yfinance as yf
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense
+from keras import models
+from keras import layers
 
 # Fetch stock data
 ticker_symbol = "AAPL"
@@ -26,10 +26,10 @@ X_train, y_train = X[:train_size], y[:train_size]
 X_test, y_test = X[train_size:], y[train_size:]
 
 # Build LSTM model
-model = Sequential()
-model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
-model.add(LSTM(units=50))
-model.add(Dense(units=1))
+model = models.Sequential()
+model.add(layers.LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
+model.add(layers.LSTM(units=50))  # You also missed the type of layer here, so I fixed it.
+model.add(layers.Dense(units=1))
 
 model.compile(optimizer='adam', loss='mean_squared_error')
 model.fit(X_train, y_train, epochs=3, batch_size=32)
