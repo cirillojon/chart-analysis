@@ -35,5 +35,5 @@ def plot_histogram(tickers):
     plt.show()
 
 # Example Usage
-tickers = ["AAPL", "MSFT", "GOOGL"]  # Change these tickers as per your requirement
+tickers = ["AAPL", "MSFT", "GOOGL"]  
 plot_histogram(tickers)
