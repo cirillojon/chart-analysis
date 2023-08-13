@@ -28,7 +28,7 @@ X_test, y_test = X[train_size:], y[train_size:]
 # Build LSTM model
 model = models.Sequential()
 model.add(layers.LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
-model.add(layers.LSTM(units=50))  # You also missed the type of layer here, so I fixed it.
+model.add(layers.LSTM(units=50))
 model.add(layers.Dense(units=1))
 
 model.compile(optimizer='adam', loss='mean_squared_error')
