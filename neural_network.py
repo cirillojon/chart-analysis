@@ -2,10 +2,12 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 import yfinance as yf
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from keras import models
 from keras import layers
+from datetime import datetime, timedelta
 
 def fetch_and_predict(ticker_symbol):
     # Fetch stock data
@@ -40,13 +42,26 @@ def fetch_and_predict(ticker_symbol):
     predicted_prices = model.predict(X_test)
     predicted_prices = scaler.inverse_transform(predicted_prices)
 
-    return data[train_size+60:], predicted_prices, data.index[60:train_size], data[60:train_size]
+    # Predict the next year's prices
+    future_dates = [data.index[-1] + timedelta(days=i) for i in range(252)]
+    future_predictions = []
+    input_sequence = scaled_data[-60:].tolist()
+    
+    for _ in range(252):
+        next_prediction = model.predict(np.array(input_sequence[-60:]).reshape(1, 60, 1))
+        input_sequence.append(next_prediction[0])
+        future_predictions.append(next_prediction[0])
 
-def show_plot(train_indexes, training_data, actual, predicted):
+    future_predictions = scaler.inverse_transform(future_predictions)
+
+    return data[train_size+60:], predicted_prices, future_dates, future_predictions, data.index[60:train_size], data[60:train_size]
+
+def show_plot(train_indexes, training_data, actual, predicted, future_dates, future_predictions):
     plt.figure(figsize=(14, 6))
     plt.plot(train_indexes, training_data, color='blue', label="Training data")
     plt.plot(actual.index, actual.values, color='green', label="Actual Price")
     plt.plot(actual.index, predicted, color='red', label="Predicted Price")
+    plt.plot(future_dates, future_predictions, color='purple', label="Future Predictions", linestyle='dashed')
     plt.legend()
     plt.show()
 
@@ -57,8 +72,8 @@ def on_submit():
         return
 
     try:
-        actual, predicted, train_indexes, training_data = fetch_and_predict(ticker_symbol)
-        show_plot(train_indexes, training_data, actual, predicted)
+        actual, predicted, future_dates, future_predictions, train_indexes, training_data = fetch_and_predict(ticker_symbol)
+        show_plot(train_indexes, training_data, actual, predicted, future_dates, future_predictions)
     except Exception as e:
         messagebox.showerror("Error", str(e))
 
